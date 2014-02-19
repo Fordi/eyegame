@@ -15,7 +15,7 @@
 			this.element.css({
 				position: 'absolute',
 				transform: 'scale(' + this.size + ') rotate(' + this.angle + 'deg)',
-				opacity: this.opacity * Math.sqrt(this.size),
+				opacity: this.opacity,
 				top: this.y - 64,
 				left: this.x - 64
 			});
@@ -40,8 +40,8 @@
 		this.viewport = $(viewport);
 	};
 	gl.Game = Game;
-	function randInt(i) {
-		return Math.floor(Math.random() * i);
+	function randInt(l, h) {
+		return Math.floor(Math.random() * (h-l) + l);
 	}
 	function randFloat(l, h) {
 		return Math.random() * (h - l) + l;
@@ -51,18 +51,31 @@
 	}
 	
 	jq.extend(Game.prototype, {
+		spotCount: 10,
+		minimumSize: 0.1,
+		maximumSize: 0.4,
+		minimumOpacity: 0.125,
+		maximumOpacity: 0.625,
+		gameTime: 60,
 		spotPopulator: function () {
-			if (this.spots.length < 20) {
+			if (this.spots.length < this.spotCount) {
 				this.spots.push((new Spot(
-					randInt(3), 
-					sqRandFloat(0.1, 0.4), 
-					randFloat(0.125, 0.625), 
-					randInt(this.viewport.width()), 
-					randInt(this.viewport.height())
+					randInt(0, 3), 
+					sqRandFloat(this.minimumSize, this.maximumSize), 
+					randFloat(this.minimumOpacity, this.maximumOpacity), 
+					randInt(this.viewport.width() * 0.125, this.viewport.width() * 0.875), 
+					randInt(this.viewport.height() * 0.125, this.viewport.height() * 0.875)
 				)).appendTo(this.viewport));
 			}
-			$('.timer').html(Math.floor((this.gameStart + 300000 - new Date())/1000));
+			var rem = this.remaining();
+			$('.timer').html(rem);
 			$('.score').html(this.score);
+			if (rem === 0) {
+				this.stop();
+			}
+		},
+		remaining: function () {
+			return Math.max(0, Math.floor((this.gameStart + (this.gameTime * 1000) - new Date())/1000));
 		},
 		start: function () {
 			var self = this;
@@ -75,6 +88,13 @@
 			this.viewport.on('click', 'img.spot', function (e) {
 				return self.spotClicked($(e.target).data('controller'));
 			});
+			this.viewport.on('dblclick selectionstart click', function () {
+				return false;
+			});
+		},
+		stop: function () {
+			gl.clearTimeout(this.runtime);
+			this.viewport.trigger('gameOver');
 		},
 		removeSpot: function (spot) {
 			var pos = this.spots.indexOf(spot);
@@ -110,8 +130,8 @@
 		calculateScore: function (spot, lastClick) {
 			var score = 1000;
 			score -= Math.min(250, (+new Date() - lastClick) / 4);
-			score -= (1 - spot.size) * 400;
-			score -= (1 - spot.opacity) * 400;
+			score -= spot.size * 400;
+			score -= spot.opacity * 400;
 			score -= spot.type * 50;
 			return Math.floor(score * 15 / 1000);
 		}
