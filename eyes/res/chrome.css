@@ -1,0 +1,15 @@
+html, body {
+	background-color: #888;
+	cursor: url(circle.png) 16 16, auto;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+}
+.game-hud {
+	display: none;
+}
+.game-over {
+	display: none;
+}
