@@ -1,4 +1,13 @@
 (function (gl, jq) {
+	function randInt(l, h) {
+		return Math.floor(Math.random() * (h-l) + l);
+	}
+	function randFloat(l, h) {
+		return Math.random() * (h - l) + l;
+	}
+	function sqRandFloat(l, h) {
+		return Math.random() * Math.random() * (h - l) + l;
+	}
 	var Spot = function (type, size, opacity, centerX, centerY) {
 		this.type = type;
 		this.size = size;
@@ -6,8 +15,8 @@
 		this.x = centerX;
 		this.y = centerY;
 		this.angle = Math.random()*360;
+		this.created = +new Date();
 	};
-	gl.Spot = Spot;
 	jq.extend(Spot.prototype, {
 		element: null,
 		render: function () {
@@ -39,16 +48,7 @@
 	var Game = function (viewport) {
 		this.viewport = $(viewport);
 	};
-	gl.Game = Game;
-	function randInt(l, h) {
-		return Math.floor(Math.random() * (h-l) + l);
-	}
-	function randFloat(l, h) {
-		return Math.random() * (h - l) + l;
-	}
-	function sqRandFloat(l, h) {
-		return Math.random() * Math.random() * (h - l) + l;
-	}
+
 	
 	jq.extend(Game.prototype, {
 		spotCount: 10,
@@ -57,7 +57,7 @@
 		minimumOpacity: 0.125,
 		maximumOpacity: 0.625,
 		gameTime: 60,
-		spotPopulator: function () {
+		gameLoop: function () {
 			if (this.spots.length < this.spotCount) {
 				this.spots.push((new Spot(
 					randInt(0, 3), 
@@ -83,7 +83,7 @@
 			this.spots = [];
 			this.lastClick = +new Date();
 			this.runtime = setInterval(function () {
-				self.spotPopulator();
+				self.gameLoop();
 			}, 250);
 			this.viewport.on('click', 'img.spot', function (e) {
 				return self.spotClicked($(e.target).data('controller'));
@@ -94,6 +94,10 @@
 		},
 		stop: function () {
 			gl.clearTimeout(this.runtime);
+			this.spots.forEach(function (spot) {
+				spot.remove();
+			});
+			this.spots.length = 0;
 			this.viewport.trigger('gameOver');
 		},
 		removeSpot: function (spot) {
@@ -136,27 +140,16 @@
 			return Math.floor(score * 15 / 1000);
 		}
 	});
-	$(function () {
-		(new Game(gl.document.body)).start()
-	});
+	
 	var Eyegame = function (windowContext) {
 		this.context = windowContext;
 		this.init();
 	};
-	gl.Eyegame = Eyegame;
 	
 	jq.extend(Eyegame.prototype, {
 		init: function () {
 			var self = this;
-			$(this.context.window).on('ready resize', function () {
-				self.sizeCheck();
-			});
-		},
-		sizeCheck: function () {
-			var window = $(this.context),
-				screen = this.context.screen,
-				fullScreen = screen.width === window.width() && screen.height === window.height();
-			$('.instructions').css({ display: fullScreen ? 'none' : 'block' });
+			(new Game(gl.document.body)).start()
 		}
 	});
 	/* The game
@@ -169,5 +162,7 @@
 				size of splotch (inverse)
 				type of splotch (depends)
 	*/
-	new Eyegame(gl.window);
+	$(function () {
+		new Eyegame(gl.window);
+	});
 }(this, this.jQuery));
