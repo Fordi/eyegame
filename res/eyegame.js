@@ -26,7 +26,8 @@
 				transform: 'scale(' + this.size + ') rotate(' + this.angle + 'deg)',
 				opacity: this.opacity,
 				top: this.y - 64,
-				left: this.x - 64
+				left: this.x - 64,
+				visibility: 'hidden'
 			});
 			this.element.attr('src', 'res/spot-' + this.type + '.png');
 			this.element.data('controller', this);
@@ -34,9 +35,16 @@
 		},
 		appendTo: function (host) {
 			this.render();
-			this.element.hide();
-			$(host).append(this.element);
-			this.element.fadeIn(5000);
+			var el = this.element;
+			el.hide();
+			$(host).append(el);
+			
+			setTimeout(function () {
+				el.fadeIn(5000);
+				setTimeout(function () {
+					el.css({ visibility: 'visible' });
+				}, 100);
+			}, 100);
 			return this;
 		},
 		remove: function () {
@@ -85,10 +93,11 @@
 			this.runtime = setInterval(function () {
 				self.gameLoop();
 			}, 250);
-			this.viewport.on('click', 'img.spot', function (e) {
-				return self.spotClicked($(e.target).data('controller'));
+			this.viewport.on('mousedown touchstart', 'img.spot', function (e) {
+				self.spotClicked($(e.target).data('controller'));
+				return false;
 			});
-			this.viewport.on('dblclick selectionstart click', function () {
+			this.viewport.on('dblclick selectionstart click mousedown keydown', function () {
 				return false;
 			});
 		},
@@ -149,7 +158,27 @@
 	jq.extend(Eyegame.prototype, {
 		init: function () {
 			var self = this;
-			(new Game(gl.document.body)).start()
+			this.viewport = $(gl.document.body);
+			$(this.viewport).on('mouseup', '.start', function () {
+				self.startGame();
+				$('.start').hide();
+				$('.game-hud').show();
+			});
+		},
+		startGame: function () {
+			var self = this;
+			this.Game = (new Game(this.viewport)).start();
+			this.viewport.on('gameOver', function () {
+				self.gameOver();
+			});
+		},
+		gameOver: function () {
+			this.Game.spots.forEach(function (spot) {
+				spot.remove();
+			});
+			$('.game-over').show();
+			$('.start').show();
+			this.Game = null;
 		}
 	});
 	/* The game

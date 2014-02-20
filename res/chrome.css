@@ -7,3 +7,9 @@ html, body {
 	height: 100%;
 	overflow: hidden;
 }
+.game-hud {
+	display: none;
+}
+.game-over {
+	display: none;
+}
