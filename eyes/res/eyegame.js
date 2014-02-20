@@ -97,7 +97,7 @@
 				self.spotClicked($(e.target).data('controller'));
 				return false;
 			});
-			this.viewport.on('dblclick selectionstart click mousedown keydown', function () {
+			this.viewport.on('dblclick selectionstart click mousedown keydown touchstart', function () {
 				return false;
 			});
 		},
