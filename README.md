@@ -15,3 +15,5 @@ Well, according to the article, these baseball players were able to improve thei
 ### Why did you write this?  The app already exists
 
 I understand there's an app they wrote that's involved, but in an ironic display of _short-sightedness_, they wrote it in iOS - so people who have other hardware are SOL.  I figured, if I was going to write something that I wanted to play, I'd write it so it'd work on anything, therefore, HTML5.
+
+You can play a demo [here](http://fordi.github.io/eyegame/eyes)
