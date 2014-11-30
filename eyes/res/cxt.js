@@ -76,10 +76,12 @@ var cxt = (function () {
 		var def = new $.Deferred(),
 			doResolve = function () {
 				if ($('#reader .loading').is(':visible')) {
-					setTimeout(doResolve, 0.125);
+					setTimeout(doResolve, 125);
 					return;
 				}
-				def.resolve();
+				setTimeout(function () {
+					def.resolve();
+				}, 500);
 			},
 			options = {
 				queue: true,
@@ -338,8 +340,12 @@ var cxt = (function () {
 	cxt.downloadPages = function (pageList) {
 		var def = cxt.progressMeter(new $.Deferred(), "Downloading pages"),
 			files = [],
+			ct = 0,
+			ttl = pageList.length,
 			err = [];
 		function downloadOne() {
+			def.notify(ct, ttl);
+			ct += 1;
 			if (pageList.length) {
 				var fn = cxt.getFilename(pageList[0]);
 				cxt.getFile(fn, false).done(function (fileEntry) {
